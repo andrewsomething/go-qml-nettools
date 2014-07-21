@@ -7,6 +7,7 @@ import (
     "time"
     "net"
     "strconv"
+    "strings"
     "github.com/Cubox-/libping"
 )
 
@@ -21,6 +22,10 @@ type App struct {
 func (a *App) HandleClick() {
     if a.running != true {
         input := a.Input.String("text")
+        if strings.Contains(input, "//") {
+            s := strings.Split(input, "//")
+            input = s[1]
+        }
         if len(input) > 0 {
             go Ping(input, a)
             a.running = true
