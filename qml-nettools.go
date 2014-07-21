@@ -10,29 +10,39 @@ import (
     "github.com/Cubox-/libping"
 )
 
-const (
-)
-
 type App struct {
     parent     qml.Object
     Input      qml.Object
     Message    qml.Object
-    pinging    bool
+    Btn        qml.Object
+    running    bool
 }
 
 func (a *App) HandleClick() {
-    input := a.Input.String("text")
-    if len(input) > 0 {
-        go ping(input, a)
+    if a.running != true {
+        input := a.Input.String("text")
+        if len(input) > 0 {
+            go Ping(input, a)
+            a.running = true
+            a.Btn.Set("text", "Stop")
+        }
+    } else {
+        a.running = false
+        a.Btn.Set("text", "Run")
     }
 }
 
-func ping(input string, a *App){
-    a.pinging = true
-    chann := make(chan libping.Response, 100)
+func Ping(input string, a *App) {
+    chann := make(chan libping.Response)
     go libping.Pinguntil(input, 0, chann, time.Second)
     for i := range chann {
-        if ne, ok := i.Error.(net.Error); ok && ne.Timeout() {
+        if a.running == false {     // Quite likely very hacky...
+            err := libping.Response {
+                Error: fmt.Errorf("Stop ping..."),
+            }
+            chann <- err
+            return
+        } else if ne, ok := i.Error.(net.Error); ok && ne.Timeout() {
             message := fmt.Sprintf("Request timeout for icmp_seq %d\n",
                                    strconv.Itoa(i.Seq))
             //fmt.Printf(message)
@@ -48,7 +58,6 @@ func ping(input string, a *App){
             //fmt.Printf(message)
         }
     }
-    a.pinging = false
     return
 }
 
@@ -69,8 +78,7 @@ func run() error {
         return err
     }
 
-    app := App{
-    }
+    app := App{}
 
     context := engine.Context()
     context.SetVar("app", &app)
@@ -79,6 +87,7 @@ func run() error {
 
     app.Message = win.Root().ObjectByName("message")
     app.Input = win.Root().ObjectByName("input")
+    app.Btn = win.Root().ObjectByName("btn")
 
     win.Show()
     win.Wait()

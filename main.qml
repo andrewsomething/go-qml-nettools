@@ -51,6 +51,7 @@ ApplicationWindow {
                     }
                     
                     Button {
+                        objectName: "btn"
                         text: "Run"
                         anchors.left: input.right
                         anchors.verticalCenter: input.verticalCenter
