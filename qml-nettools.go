@@ -35,6 +35,7 @@ func (a *App) HandleClick() {
 func Ping(input string, a *App) {
     chann := make(chan libping.Response)
     go libping.Pinguntil(input, 0, chann, time.Second)
+    a.Message.Set("text", "")
     for i := range chann {
         if a.running == false {     // Quite likely very hacky...
             err := libping.Response {
@@ -43,18 +44,18 @@ func Ping(input string, a *App) {
             chann <- err
             return
         } else if ne, ok := i.Error.(net.Error); ok && ne.Timeout() {
-            message := fmt.Sprintf("Request timeout for icmp_seq %d\n",
+            message := fmt.Sprintf("Request timeout for icmp_seq %d",
                                    strconv.Itoa(i.Seq))
             //fmt.Printf(message)
-            a.Message.Set("text", message)
+            a.Message.Call("append", message)
             continue
         } else if i.Error != nil {
             fmt.Println(i.Error)
             a.Message.Set("text", fmt.Sprintf("Error: %s", i.Error))
         } else {
-            message := fmt.Sprintf("%d bytes from %s: icmp_seq=%d time=%s\n",
+            message := fmt.Sprintf("%d bytes from %s: icmp_seq=%d time=%s",
                                    i.Readsize, i.Destination, i.Seq, i.Delay)
-            a.Message.Set("text", message)
+            a.Message.Call("append", message)
             //fmt.Printf(message)
         }
     }
