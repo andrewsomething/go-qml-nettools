@@ -22,7 +22,7 @@ ApplicationWindow {
             Rectangle {
                 id: row1
                 height: 50
-                color: "lightsteelblue"
+                color: "#DEDEDE"
                 Layout.minimumHeight: 1
 
                 RowLayout {
@@ -63,12 +63,15 @@ ApplicationWindow {
 
             Rectangle {
                 id: row2
-                color: "lightgray"
+                color: "#272822"
                 
-                Text {
+                TextArea {
                     objectName: "message"
-                    property int clicks: 0
-                    anchors.centerIn: parent
+                    anchors.fill: parent
+                    readOnly: true
+                    font.family: "monospace"
+                    textColor: "#94B630"
+                    backgroundVisible: false
                     text: "Click that button up there"
                 }
             }
